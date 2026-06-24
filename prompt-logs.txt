@@ -30,3 +30,23 @@
     - No payload. Clears the auth cookie.
 
     Ensure the folder layout segregates routes, controllers, and services cleanly. Use pure JavaScript. Handle errors gracefully and return standardized JSON error messages for invalid domains or bad credentials.
+
+3. Let's build the administration endpoints. These endpoints are protected and can ONLY be called by the root CFO user. 
+
+    Implement an authentication/RBAC middleware that reads the HTTP session cookie, validates the session, identifies the user's role, and blocks unauthorized roles with a 403 Forbidden status.
+
+    Next, build the routes, controllers, and services for:
+    1. POST /rest/roles/assign
+    - Request body: { userId, role }
+    - Restricted to: CFO only.
+    2. POST /rest/employees/assign
+    - Assigns an employee to a reporting manager.
+    - Request body: { userId, managerId } (where userId belongs to an EMP and managerId belongs to an RM).
+    - Restricted to: CFO only.
+    3. DELETE /rest/employees/assign
+    - Removes the reporting assignment between an employee and an RM.
+    - Request body: { userId, managerId }
+    - Restricted to: CFO only.
+
+    Write defensive code checking edge cases (e.g., ensuring you can't assign an employee to a manager who doesn't hold the 'RM' role).
+
