@@ -2,6 +2,8 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import { env } from "./config/env.js";
 import authRoutes from "./routes/auth.routes.js";
+import roleRoutes from "./routes/role.routes.js";
+import employeeRoutes from "./routes/employee.routes.js";
 
 const app = express();
 
@@ -24,6 +26,8 @@ app.get("/health", (_req, res) => {
 
 // ── Routes ───────────────────────────────────────────────────────
 app.use("/rest/onboardings", authRoutes);
+app.use("/rest/roles", roleRoutes);
+app.use("/rest/employees", employeeRoutes);
 
 // ── 404 Handler ──────────────────────────────────────────────────
 app.use((_req, res) => {
