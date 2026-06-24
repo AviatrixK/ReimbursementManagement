@@ -49,4 +49,19 @@
     - Restricted to: CFO only.
 
     Write defensive code checking edge cases (e.g., ensuring you can't assign an employee to a manager who doesn't hold the 'RM' role).
+4. We need to implement the directory listing endpoint: GET /rest/employees.
+
+    This endpoint has complex visibility rules based on the requester's role:
+    - EMP: Not allowed to access this API (403 Forbidden).
+    - RM: Lists ALL the EMPs reporting directly to them.
+    - APE: Lists ALL EMPs and RMs in the system.
+    - CFO: Lists absolutely everyone.
+
+    Implement the route, controller logic, and the precise database query layers to selectively filter the user records returned based on the requester's extracted cookie identity and role. The response shape must strictly follow:
+    {
+    "status": "success",
+    "data": {
+        "users": [ { "userId": "...", "name": "...", "email": "...", "role": "..." } ]
+    }
+    }
 

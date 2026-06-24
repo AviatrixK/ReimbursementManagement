@@ -28,4 +28,19 @@ export class EmployeeController {
       next(error);
     }
   }
+
+  static async getDirectory(req, res, next) {
+    try {
+      const requesterId = req.user.id;
+      const requesterRole = req.user.role;
+      const users = await EmployeeService.getDirectory(requesterId, requesterRole);
+
+      return res.status(200).json({
+        status: "success",
+        data: { users },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

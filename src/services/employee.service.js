@@ -1,6 +1,6 @@
 import { db } from "../config/db.js";
 import { users } from "../db/schema.js";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 
 export class EmployeeService {
   static async assignManager({ userId, managerId }) {
@@ -78,5 +78,42 @@ export class EmployeeService {
       });
 
     return updatedEmployee;
+  }
+
+  static async getDirectory(requesterId, requesterRole) {
+    if (requesterRole === "EMP") {
+      const error = new Error("Forbidden: Employees do not have permission to view the directory");
+      error.status = 403;
+      throw error;
+    }
+
+    let queryResults = [];
+
+    if (requesterRole === "RM") {
+      // Lists ALL the EMPs reporting directly to them
+      queryResults = await db
+        .select()
+        .from(users)
+        .where(and(eq(users.role, "EMP"), eq(users.reportingManagerId, requesterId)));
+    } else if (requesterRole === "APE") {
+      // Lists ALL EMPs and RMs in the system
+      queryResults = await db
+        .select()
+        .from(users)
+        .where(inArray(users.role, ["EMP", "RM"]));
+    } else if (requesterRole === "CFO") {
+      // Lists absolutely everyone
+      queryResults = await db.select().from(users);
+    }
+
+    return queryResults.map(user => {
+      const name = user.email.split("@")[0]; // default representation as name is not stored
+      return {
+        userId: user.id,
+        name: name,
+        email: user.email,
+        role: user.role,
+      };
+    });
   }
 }

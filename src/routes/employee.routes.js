@@ -7,5 +7,6 @@ const router = Router();
 
 router.post("/assign", authenticate, authorizeRoles("CFO"), EmployeeController.assign);
 router.delete("/assign", authenticate, authorizeRoles("CFO"), EmployeeController.remove);
+router.get("/", authenticate, EmployeeController.getDirectory);
 
 export default router;
