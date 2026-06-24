@@ -1,6 +1,6 @@
 import { db } from "../config/db.js";
 import { reimbursements, reimbursementApprovals, users } from "../db/schema.js";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, inArray } from "drizzle-orm";
 
 export class ReimbursementService {
   static async raiseClaim({ employeeId, title, description, amount }) {
@@ -139,5 +139,131 @@ export class ReimbursementService {
       .returning();
 
     return updatedReimbursement;
+  }
+
+  static async getReimbursementQueue(userId, userRole) {
+    if (userRole === "EMP") {
+      // EMP sees only their own claims
+      return db
+        .select()
+        .from(reimbursements)
+        .where(eq(reimbursements.employeeId, userId))
+        .orderBy(desc(reimbursements.createdAt));
+    }
+
+    if (userRole === "RM") {
+      // RM sees claims that are PENDING from their direct subordinate EMPs
+      return db
+        .select({
+          id: reimbursements.id,
+          employeeId: reimbursements.employeeId,
+          title: reimbursements.title,
+          amount: reimbursements.amount,
+          description: reimbursements.description,
+          status: reimbursements.status,
+          createdAt: reimbursements.createdAt,
+          updatedAt: reimbursements.updatedAt,
+        })
+        .from(reimbursements)
+        .innerJoin(users, eq(reimbursements.employeeId, users.id))
+        .where(
+          and(
+            eq(reimbursements.status, "PENDING"),
+            eq(users.role, "EMP"),
+            eq(users.reportingManagerId, userId)
+          )
+        )
+        .orderBy(desc(reimbursements.createdAt));
+    }
+
+    if (userRole === "APE") {
+      // APE sees claims PENDING at the APE level but already APPROVED by the employee's RM
+      // (To verify RM approved, we find approvals where status = 'APPROVED' and approverId is equal to employee's reporting manager)
+      const allPending = await db
+        .select({
+          reimbursement: reimbursements,
+          managerId: users.reportingManagerId,
+        })
+        .from(reimbursements)
+        .innerJoin(users, eq(reimbursements.employeeId, users.id))
+        .where(eq(reimbursements.status, "PENDING"));
+
+      const filtered = [];
+      for (const item of allPending) {
+        const rId = item.reimbursement.id;
+        const managerId = item.managerId;
+
+        // Verify if designated RM approved it
+        const approvals = await db
+          .select()
+          .from(reimbursementApprovals)
+          .where(
+            and(
+              eq(reimbursementApprovals.reimbursementId, rId),
+              eq(reimbursementApprovals.approverId, managerId),
+              eq(reimbursementApprovals.status, "APPROVED")
+            )
+          )
+          .limit(1);
+
+        if (approvals.length > 0) {
+          filtered.push(item.reimbursement);
+        }
+      }
+      return filtered;
+    }
+
+    if (userRole === "CFO") {
+      // CFO sees claims already APPROVED by the APEs (contains approval entry by APE role)
+      const approvals = await db
+        .select({ reimbursementId: reimbursementApprovals.reimbursementId })
+        .from(reimbursementApprovals)
+        .where(
+          and(
+            eq(reimbursementApprovals.role, "APE"),
+            eq(reimbursementApprovals.status, "APPROVED")
+          )
+        );
+
+      const reimbursementIds = approvals.map(a => a.reimbursementId);
+      if (reimbursementIds.length === 0) return [];
+
+      // Drizzle inArray check
+      return db
+        .select()
+        .from(reimbursements)
+        .where(inArray(reimbursements.id, reimbursementIds))
+        .orderBy(desc(reimbursements.createdAt));
+    }
+
+    return [];
+  }
+
+  static async getSubordinateClaims(requesterId, requesterRole, targetUserId) {
+    if (!targetUserId) {
+      throw new Error("userId parameter is required");
+    }
+
+    // 1. Verify targeted user exists
+    const [targetUser] = await db.select().from(users).where(eq(users.id, targetUserId)).limit(1);
+    if (!targetUser) {
+      const error = new Error("Target user not found");
+      error.status = 404;
+      throw error;
+    }
+
+    // 2. Rule: Only accessible if that targeted user is an EMP AND is a direct subordinate of the requesting user.
+    if (targetUser.role !== "EMP" || targetUser.reportingManagerId !== requesterId) {
+      const error = new Error("Forbidden: Target user is not a direct subordinate of the requester");
+      error.status = 403;
+      throw error;
+    }
+
+    // 3. List all claims
+    return db
+      .select()
+      .from(reimbursements)
+      .where(eq(reimbursements.employeeId, targetUserId))
+      .orderBy(desc(reimbursements.createdAt));
   }
 }

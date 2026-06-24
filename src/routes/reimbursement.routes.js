@@ -11,4 +11,10 @@ router.post("/", authenticate, authorizeRoles("EMP"), ReimbursementController.ra
 // Approve/Reject claim: restricted to RM, APE, and CFO
 router.patch("/", authenticate, authorizeRoles("RM", "APE", "CFO"), ReimbursementController.patch);
 
+// Get reimbursement queue list
+router.get("/", authenticate, ReimbursementController.getQueue);
+
+// Get subordinate reimbursement list
+router.get("/:userId", authenticate, ReimbursementController.getSubordinateQueue);
+
 export default router;

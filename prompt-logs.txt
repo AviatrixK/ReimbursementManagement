@@ -82,3 +82,19 @@
 
     Write this logic cleanly in the service layer using a ledger approach or multi-signature flag tracking columns in our PostgreSQL database.
 
+6.  Let's complete the final components of the API specification: fetching reimbursement queues.
+
+    Implement the following two lookup endpoints:
+    1. GET /rest/reimbursements
+    - Visibility rules:
+        * EMP sees only their own claims.
+        * RM sees claims that are PENDING from their direct subordinate EMPs.
+        * APE sees claims PENDING at the APE level but already APPROVED by the employee's RM.
+        * CFO sees claims already APPROVED by the APEs.
+
+    2. GET /rest/reimbursements/<user-id>
+    - Action: Lists all the claims for the given user-id parameter.
+    - Rule: Only accessible if that targeted user is an EMP AND is a direct subordinate of the requesting user.
+
+    Match the exact output JSON payload response formats specified in the documentation. Run a mental edge-case inspection for security flaws (like ID-harvesting or horizontal privilege escalation) to guarantee our system is fully watertight.
+

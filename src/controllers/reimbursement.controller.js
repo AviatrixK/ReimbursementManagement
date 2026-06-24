@@ -46,4 +46,40 @@ export class ReimbursementController {
       next(error);
     }
   }
+
+  static async getQueue(req, res, next) {
+    try {
+      const userId = req.user.id;
+      const userRole = req.user.role;
+      const queue = await ReimbursementService.getReimbursementQueue(userId, userRole);
+
+      return res.status(200).json({
+        success: true,
+        data: { reimbursements: queue },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getSubordinateQueue(req, res, next) {
+    try {
+      const requesterId = req.user.id;
+      const requesterRole = req.user.role;
+      const targetUserId = req.params.userId;
+
+      const claims = await ReimbursementService.getSubordinateClaims(
+        requesterId,
+        requesterRole,
+        targetUserId
+      );
+
+      return res.status(200).json({
+        success: true,
+        data: { reimbursements: claims },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
