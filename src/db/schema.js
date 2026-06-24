@@ -17,6 +17,7 @@ export const users = pgTable("users", {
 export const reimbursements = pgTable("reimbursements", {
   id: uuid("id").primaryKey().defaultRandom(),
   employeeId: uuid("employee_id").references(() => users.id, { onDelete: "CASCADE" }).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
   description: text("description").notNull(),
   status: reimbursementStatusEnum("status").notNull().default("PENDING"),

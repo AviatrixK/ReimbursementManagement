@@ -4,6 +4,7 @@ import { env } from "./config/env.js";
 import authRoutes from "./routes/auth.routes.js";
 import roleRoutes from "./routes/role.routes.js";
 import employeeRoutes from "./routes/employee.routes.js";
+import reimbursementRoutes from "./routes/reimbursement.routes.js";
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.get("/health", (_req, res) => {
 app.use("/rest/onboardings", authRoutes);
 app.use("/rest/roles", roleRoutes);
 app.use("/rest/employees", employeeRoutes);
+app.use("/rest/reimbursements", reimbursementRoutes);
 
 // ── 404 Handler ──────────────────────────────────────────────────
 app.use((_req, res) => {

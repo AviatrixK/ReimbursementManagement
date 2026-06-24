@@ -65,3 +65,20 @@
     }
     }
 
+5. Let's build the core engine of the system: the reimbursement lifecycle. 
+
+    Implement the following endpoints with strict domain validation rules:
+    1. POST /rest/reimbursements
+    - Action: Raises a new claim.
+    - Restricted to: EMP only.
+    - Request body: { title, description, amount }
+    - Initial behavior: Status sets to PENDING.
+
+    2. PATCH /rest/reimbursements
+    - Action: Approves or rejects an existing claim.
+    - Request body: { userId, status }  *(Note: userId corresponds to the employee who raised the reimbursement, status is either APPROVED or REJECTED)*
+    - Restrictions: EMP cannot edit a reimbursement once raised. RM, APE, and CFO can approve or reject.
+    - **CRITICAL APPROVAL RULE**: A reimbursement status turns APPROVED from the EMP's perspective ONLY once both their designated RM AND at least one APE have explicitly approved it. If only one has approved it, or if it's waiting on another layer, its composite state reflects appropriately based on who is viewing it. 
+
+    Write this logic cleanly in the service layer using a ledger approach or multi-signature flag tracking columns in our PostgreSQL database.
+
