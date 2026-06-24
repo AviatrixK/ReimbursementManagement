@@ -1,6 +1,7 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import { env } from "./config/env.js";
+import authRoutes from "./routes/auth.routes.js";
 
 const app = express();
 
@@ -22,13 +23,23 @@ app.get("/health", (_req, res) => {
 });
 
 // ── Routes ───────────────────────────────────────────────────────
-// Routes will be mounted here incrementally as they are built.
+app.use("/rest/onboardings", authRoutes);
 
 // ── 404 Handler ──────────────────────────────────────────────────
 app.use((_req, res) => {
   res.status(404).json({
     success: false,
     message: "Route not found",
+  });
+});
+
+// ── Global Error Handler ──────────────────────────────────────────
+app.use((err, req, res, next) => {
+  console.error("Error details:", err);
+  const status = err.status || 400;
+  return res.status(status).json({
+    success: false,
+    message: err.message || "An unexpected error occurred",
   });
 });
 

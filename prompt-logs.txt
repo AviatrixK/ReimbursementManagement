@@ -15,3 +15,18 @@
     - An EMP's reimbursement only turns APPROVED from the EMP's perspective once both their assigned RM and any one APE have explicitly patched it to an approved state. Therefore, we need to track individual manager and APE approval signatures/actions.
 
     Please write the clean, production-ready SQL migration files along with the package.json scripts configuration to handle db:migrate and db:seed-data. Do not use TypeScript. Include robust edge-case tracking for passwords (hashed using bcrypt).
+
+2.  Now that our database schema and CFO seed are established, let's implement the public
+    onboarding routes. 
+
+    Write the routes, controllers, and services for these exact endpoints:
+    1. POST /rest/onboardings/register
+    - Request Body: { name, email, password }
+    - Rules: Default role must be 'EMP'. Only allow emails belonging to the 'org.com' domain.
+    2. POST /rest/onboardings/login
+    - Request Body: { email, password }
+    - Rules: Only allow 'org.com' domain. Authenticate the user and set a secure HttpOnly auth cookie.
+    3. POST /rest/onboardings/logout
+    - No payload. Clears the auth cookie.
+
+    Ensure the folder layout segregates routes, controllers, and services cleanly. Use pure JavaScript. Handle errors gracefully and return standardized JSON error messages for invalid domains or bad credentials.
