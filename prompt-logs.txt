@@ -1,0 +1,17 @@
+1. I am building a backend role-based access control reimbursements tool in JavaScript 
+   (Node.js >=  20.10.2) using Express.js and Supabase PostgreSQL. 
+
+    I need to implement the database schema and initialization scripts. According to the specification, I must expose two scripts in package.json:
+    1. "db:migrate": Sets up the required database structure.
+    2. "db:seed-data": Seeds EXACTLY and ONLY the root CFO user:
+    - Email: cfo@org.com
+    - Password: CFO#ORG@April2026
+    - Role: CFO
+
+    System details & requirements:
+    - Roles available: EMP, RM, APE, CFO.
+    - Every EMP reports to exactly one RM (handle this hierarchical relationship cleanly using foreign keys or a clean assignments junction).
+    - Reimbursements have statuses: PENDING, REJECTED, APPROVED.
+    - An EMP's reimbursement only turns APPROVED from the EMP's perspective once both their assigned RM and any one APE have explicitly patched it to an approved state. Therefore, we need to track individual manager and APE approval signatures/actions.
+
+    Please write the clean, production-ready SQL migration files along with the package.json scripts configuration to handle db:migrate and db:seed-data. Do not use TypeScript. Include robust edge-case tracking for passwords (hashed using bcrypt).
