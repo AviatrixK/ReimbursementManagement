@@ -7,8 +7,8 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
+    "db:migrate": "drizzle-kit generate && drizzle-kit migrate",
+    "db:seed-data": "node src/seed/seed-data.js",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "seed": "node src/seed/seed.js"
