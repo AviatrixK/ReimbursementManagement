@@ -1,0 +1,16 @@
+# Node
+node_modules/
+
+# Environment
+.env
+
+# Drizzle
+drizzle/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
