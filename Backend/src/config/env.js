@@ -9,7 +9,7 @@ const _required = (key) => {
 };
 
 export const env = {
-  port: process.env.PORT || 3000,
+  port: process.env.PORT || 7002,
   nodeEnv: process.env.NODE_ENV || "development",
 
   databaseUrl: _required("DATABASE_URL"),
