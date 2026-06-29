@@ -106,6 +106,10 @@ export class EmployeeService {
       queryResults = await db.select().from(users);
     }
 
+    // Fetch all users to build an id -> email map for resolving manager names
+    const allUsers = await db.select({ id: users.id, email: users.email }).from(users);
+    const userEmailMap = new Map(allUsers.map(u => [u.id, u.email]));
+
     return queryResults.map(user => {
       const name = user.email.split("@")[0]; // default representation as name is not stored
       return {
@@ -113,6 +117,10 @@ export class EmployeeService {
         name: name,
         email: user.email,
         role: user.role,
+        reportingManagerId: user.reportingManagerId,
+        reportingManagerEmail: user.reportingManagerId
+          ? (userEmailMap.get(user.reportingManagerId) || null)
+          : null,
       };
     });
   }
