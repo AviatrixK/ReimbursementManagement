@@ -1,4 +1,4 @@
-# RazorPay Take Home
+# Reimbursement Management 
 
 A minimal reimbursement management system demonstrating role-based access control (RBAC) with an Express backend and React/Vite frontend.
 
